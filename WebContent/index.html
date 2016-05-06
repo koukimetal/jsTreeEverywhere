@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>jsTree Everywhere</title>
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.amd.min.js"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+<link
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+	rel="stylesheet">
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<script src="main.js"></script>
+</head>
+<body>
+	<div class="container">
+		<h2>jsTree Everywhere</h2>
+
+		<div id="my_dir"></div>
+		<script>
+			setUp();
+		</script>
+
+		<h3>How to use</h3>
+		<div>
+			Right click on "root" and
+			<code>Create</code>
+			. Create directory structures. Finally, click
+			<code>Publish</code>
+			. Get a snippet and put it on your website.
+		</div>
+
+		<h3>Requirements to use snippets</h3>
+		<div>
+			You should put following 3 lines inside
+			<code>head</code>
+			tag.
+		</div>
+		<pre id="requirements">&lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" /&gt;
+&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"&gt;&lt;/script&gt;</pre>
+
+		<h3>Snippets</h3>
+		<textarea id="snippet_result" class="form-control" rows="3"></textarea>
+	</div>
+</body>
+</html>
