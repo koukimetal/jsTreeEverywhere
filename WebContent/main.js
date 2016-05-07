@@ -22,44 +22,40 @@ var setUp = function() {
 					var inst = $.jstree.reference(data.reference),
 					obj = inst.get_node(data.reference);
 					var v = $('#my_dir').jstree(true).get_json(obj.id);
-					v = jsTreeJsonMaker(v);
+					
+					var treeId = $('#treeId').val();
+					if(treeId == "") {
+						treeId = 'tree_' + Math.floor(Math.random() * 1000);
+					}
+					
+					v = jsTreeJsonMaker(treeId, v);
 					var jsonForm = JSON.stringify(v);
-					var snippet = snippetMaker(jsonForm);
+					var snippet = snippetMaker(treeId, jsonForm);
 
 					$("#snippet_result").val(snippet);
 				});
 
 				//Create item with icon
-				defaultItems.create.submenu = {
-						"directory" : makeNormalItem("Directory", function (data) {
-							var inst = $.jstree.reference(data.reference),
-							obj = inst.get_node(data.reference);
-							inst.create_node(obj, {"icon" : "glyphicon glyphicon-folder-open"}, "last", function (new_node) {
-								setTimeout(function () { inst.edit(new_node); },0);
-							});
-						}),
-						"file" : makeNormalItem("File", function (data) {
-							var inst = $.jstree.reference(data.reference),
-							obj = inst.get_node(data.reference);
-							inst.create_node(obj, {"icon" : "glyphicon glyphicon-file"}, "last", function (new_node) {
-								setTimeout(function () { inst.edit(new_node); },0);
-							});
-						}),
-						"image" : makeNormalItem("Image", function (data) {
-							var inst = $.jstree.reference(data.reference),
-							obj = inst.get_node(data.reference);
-							inst.create_node(obj, {"icon" : "glyphicon glyphicon-picture"}, "last", function (new_node) {
-								setTimeout(function () { inst.edit(new_node); },0);
-							});
-						}),
-						"log" : makeNormalItem("Log", function (data) {
-							var inst = $.jstree.reference(data.reference),
-							obj = inst.get_node(data.reference);
-							inst.create_node(obj, {"icon" : "glyphicon glyphicon-floppy-disk"}, "last", function (new_node) {
-								setTimeout(function () { inst.edit(new_node); },0);
-							});
-						})
-				};
+				defaultItems.create.submenu = makeIconSubmenu(
+						{
+							"directory" : {
+								"label" : "Directory",
+								"icon" : "glyphicon glyphicon-folder-open"
+							},
+							"file" : {
+								"label" : "File",
+								"icon" : "glyphicon glyphicon-file"
+							},
+							"image" : {
+								"label" : "Image",
+								"icon" : "glyphicon glyphicon-picture"
+							},
+							"log" : {
+								"label" : "Log",
+								"icon" : "glyphicon glyphicon-floppy-disk"
+							}
+						}	
+				);
 
 				//To prevent some action to a root
 				if (o.id == "root") {
@@ -77,30 +73,21 @@ var setUp = function() {
 	});
 }
 
-//TODO implement what I want! In progress
-//I want to minify where I make icon items.
-//var makeIconSubmenu = function() {
-//	list = [
-//		["directory", "Directory", "glyphicon glyphicon-folder-open"],
-//		["directory", "Directory", "glyphicon glyphicon-folder-open"]
-//	];
-//	console.log(list[1][2]);
-//	var obj = {};
-//	console.log(list.length);
-//	for(var i = 0; i < list.length; i++) {
-//		console.log(i);
-//		console.log(list[i][1]);
-//		obj[list[i][0]] = makeNormalItem(list[i][1], function (data) {
-//			var inst = $.jstree.reference(data.reference),
-//			obj = inst.get_node(data.reference);
-//			console.log(list[i]);
-//			inst.create_node(obj, {"icon" : list[i][2]}, "last", function (new_node) {
-//				setTimeout(function () { inst.edit(new_node); },0);
-//			});
-//		})
-//	}
-//	return obj;
-//}
+var makeIconSubmenu = function(items) {
+	var resobj = {};
+	$.each(items, function(key, value) {
+		var itemFuncion = function (data) {
+			var inst = $.jstree.reference(data.reference),
+			obj = inst.get_node(data.reference);
+			inst.create_node(obj, {"icon" : value.icon}, "last", function (new_node) {
+				setTimeout(function () { inst.edit(new_node); },0);
+			});
+		};
+		resobj[key] = makeNormalItem(value.label, itemFuncion);
+	});
+
+	return resobj;
+}
 
 var makeNormalItem = function(label, action) {
 	var obj = {
@@ -112,18 +99,38 @@ var makeNormalItem = function(label, action) {
 	return obj;
 }
 
-var jsTreeJsonMaker = function(data) {
+var makeTrimmedObject = function(root, nodeId, prefix) {
+	var obj = {};
+	obj.id = prefix + "_" + nodeId;
+	obj.text = root.text;
+	obj.icon = root.icon;
+	obj.state = {};
+	obj.state.opened = root.state.opened;
+	var size = 1;
+	if(root.children.length > 0) {
+		obj.children = [];
+		for(var i = 0; i < root.children.length; i++) {
+			var v = makeTrimmedObject(root.children[i], nodeId + size, prefix);
+			size += v[0];
+			obj.children[i] = v[1];
+		}
+	}
+	
+	return [size, obj];
+}
+
+var jsTreeJsonMaker = function(treeId, data) {
+	var trimmedData = makeTrimmedObject(data, 0, treeId)[1];
 	var obj = {
 			"core" : {
-				"data" : [data]
+				"data" : [trimmedData]
 			}
 	};
 	return obj;
 }
 
-var snippetMaker = function(jsonForm) {
+var snippetMaker = function(treeId, jsonForm) {
 	//TODO if an user have 2 trees then, id should duplicate.
-	var treeId = 'tree_' + Math.floor(Math.random() * 1000);
 	var treeDiv = "<div id='" + treeId + "'></div>\n";
 	var jsTreeCommand = 
 		"$('#" + treeId + "').jstree(" +
