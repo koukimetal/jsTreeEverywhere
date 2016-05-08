@@ -15,7 +15,26 @@
 	rel="stylesheet">
 <script
 	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
 <script src="main.js"></script>
+<script id="tree-template" type="text/x-handlebars-template">
+{{#each children}}
+<li id="{{id}}"{{#if state.opened}} class="jstree-open"{{/if}}{{#if icon}} data-jstree='{"icon":"{{icon}}"}'{{/if}}>
+{{{text}}}
+{{#if children}}
+<ul>
+{{> tree-template}}
+</ul>
+{{/if}}
+</li>
+{{/each}}
+</script>
+<script id="main-template" type="text/x-handlebars-template">
+<ul>
+{{> tree-template}}
+</ul>
+</script>
 </head>
 <body>
 	<div class="container">
@@ -24,6 +43,7 @@
 		<div id="my_dir"></div>
 		<script>
 			setUp();
+			setUpHandlebars();
 		</script>
 
 		<h3>How to use</h3>
@@ -37,31 +57,41 @@
 
 		<h3>Requirements to use snippets</h3>
 		<div>
-			You should put following 3 lines inside
 			<code>head</code>
-			tag.
+			tag has to include following 3 lines.
 		</div>
 		<pre>&lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" /&gt;
 &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"&gt;&lt;/script&gt;
 &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"&gt;&lt;/script&gt;</pre>
 		<div>
-			If you want to use icons (e.g.
-			<i class = "glyphicon glyphicon-folder-open"></i>
-			), you should put following line inside
+			If you want to use icons (e.g. <i
+				class="glyphicon glyphicon-folder-open"></i> ),
 			<code>head</code>
-			tag.
+			tag has to include following line.
 		</div>
 		<pre>
 &lt;link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet"&gt;</pre>
 		<h3>ID</h3>
 		<form class="form-inline">
 			<div class="form-group">
-			<input type="text" class="form-control" id="treeId" placeholder="treeId">
-			You can put an id for a published tree. Otherwise id should be tree_&lt;random number&gt;.
-		</div>
+				<input type="text" class="form-control" id="treeId"
+					placeholder="treeId"> You can give an id to a published
+				tree. Otherwise id should be tree_&lt;random number&gt;.
+			</div>
 		</form>
-		<h3>Snippets</h3>
-		<textarea id="snippet_result" class="form-control" rows="5"></textarea>
+		<h2>Snippets</h2>
+		<ul class="nav nav-tabs">
+			<li class="active"><a data-toggle="tab" href="#jsonTab">JSON</a></li>
+			<li><a data-toggle="tab" href="#htmlTab">HTML</a></li>
+		</ul>
+		<div class="tab-content">
+			<div id="jsonTab" class="tab-pane fade in active">
+				<textarea id="snippetJSON" class="form-control" rows="5"></textarea>
+			</div>
+			<div id="htmlTab" class="tab-pane fade">
+				<textarea id="snippetHTML" class="form-control" rows="5"></textarea>
+			</div>
+		</div>
 	</div>
 </body>
 </html>

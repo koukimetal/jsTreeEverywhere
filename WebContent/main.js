@@ -21,18 +21,24 @@ var setUp = function() {
 				defaultItems.publish = makeNormalItem("Publish", function (data) {
 					var inst = $.jstree.reference(data.reference),
 					obj = inst.get_node(data.reference);
-					var v = $('#my_dir').jstree(true).get_json(obj.id);
+					var rawJson = $('#my_dir').jstree(true).get_json(obj.id);
 					
 					var treeId = $('#treeId').val();
 					if(treeId == "") {
 						treeId = 'tree_' + Math.floor(Math.random() * 1000);
 					}
 					
-					v = jsTreeJsonMaker(treeId, v);
-					var jsonForm = JSON.stringify(v);
-					var snippet = snippetMaker(treeId, jsonForm);
+					var trimmedJsTreeData = makeTrimmedObject(rawJson, 0, treeId)[1];
+					var jsTree = makeJsTree(treeId, trimmedJsTreeData);
+					
+					var jsTreeJson = JSON.stringify(jsTree);
+					var jsonSnippet = snippetMaker(treeId, "", jsTreeJson);
 
-					$("#snippet_result").val(snippet);
+					$("#snippetJSON").val(jsonSnippet);
+					
+					var jsTreeHTML = makeJsTreeHTML(treeId, trimmedJsTreeData);
+					var htmlSnippet = snippetMaker(treeId, jsTreeHTML, "");
+					$("#snippetHTML").val(htmlSnippet);
 				});
 
 				//Create item with icon
@@ -73,6 +79,17 @@ var setUp = function() {
 	});
 }
 
+var setUpHandlebars = function() {
+	Handlebars.registerPartial( "tree-template", $( "#tree-template" ).html() );
+}
+
+var makeJsTreeHTML = function(treeId, trimmedData) {
+	var main = Handlebars.compile( $( "#main-template" ).html());
+	var html = main( {"children": [trimmedData]} );
+//	return html;
+	return html.replace(/>\s+</g, "><").replace(/\s+</g, "<").replace(/>\s+/g, ">");
+}
+
 var makeIconSubmenu = function(items) {
 	var resobj = {};
 	$.each(items, function(key, value) {
@@ -103,7 +120,9 @@ var makeTrimmedObject = function(root, nodeId, prefix) {
 	var obj = {};
 	obj.id = prefix + "_" + nodeId;
 	obj.text = root.text;
-	obj.icon = root.icon;
+	if(root.icon !== true) {
+		obj.icon = root.icon;
+	}
 	obj.state = {};
 	obj.state.opened = root.state.opened;
 	var size = 1;
@@ -119,8 +138,7 @@ var makeTrimmedObject = function(root, nodeId, prefix) {
 	return [size, obj];
 }
 
-var jsTreeJsonMaker = function(treeId, data) {
-	var trimmedData = makeTrimmedObject(data, 0, treeId)[1];
+var makeJsTree = function(treeId, trimmedData) {
 	var obj = {
 			"core" : {
 				"data" : [trimmedData]
@@ -129,16 +147,15 @@ var jsTreeJsonMaker = function(treeId, data) {
 	return obj;
 }
 
-var snippetMaker = function(treeId, jsonForm) {
-	//TODO if an user have 2 trees then, id should duplicate.
-	var treeDiv = "<div id='" + treeId + "'></div>\n";
+var snippetMaker = function(treeId, htmlForm, jsonForm) {
+	var treeDiv = "<div id='" + treeId + "'>" + htmlForm + "</div>\n";
 	var jsTreeCommand = 
 		"$('#" + treeId + "').jstree(" +
 		jsonForm +
 		")";
 	var treeScript = 
-		"<script>\n" +
-		jsTreeCommand + ";\n" +
+		"<script>" +
+		jsTreeCommand + ";" +
 		"</script>";
 	return treeDiv + treeScript;
 }
