@@ -46,19 +46,19 @@ var setUp = function() {
 						{
 							"directory" : {
 								"label" : "Directory",
-								"icon" : "glyphicon glyphicon-folder-open"
+								"icon" : "icon-folder-alt"
 							},
 							"file" : {
 								"label" : "File",
-								"icon" : "glyphicon glyphicon-file"
+								"icon" : "icon-doc"
 							},
 							"image" : {
 								"label" : "Image",
-								"icon" : "glyphicon glyphicon-picture"
+								"icon" : "icon-picture"
 							},
-							"log" : {
-								"label" : "Log",
-								"icon" : "glyphicon glyphicon-floppy-disk"
+							"disc" : {
+								"label" : "Disc",
+								"icon" : "icon-disc"
 							}
 						}	
 				);
@@ -156,7 +156,7 @@ var snippetMaker = function(treeId, htmlForm, jsonForm) {
 	var treeScript = 
 		"<script>" +
 		jsTreeCommand + ";" +
-		"</script>";
+		"</script>\n";
 	return treeDiv + treeScript;
 }
 
