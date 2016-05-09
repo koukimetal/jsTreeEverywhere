@@ -1,2 +1,4 @@
 # jsTreeEverywhere
-Help people use jsTree
+This project helps people use jsTree
+
+Demo http://koukimetal.github.io/jsTreeEverywhere/
