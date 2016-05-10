@@ -49,6 +49,8 @@ var setUp = function() {
 					delete defaultItems.ccp.submenu.copy;
 					delete defaultItems.publish;
 					delete defaultItems.changeIcon;
+					delete defaultItems.link;
+					delete defaultItems.unlink;
 				}
 
 				return defaultItems;
