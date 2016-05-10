@@ -13,7 +13,23 @@ var setUp = function() {
 				//Change icon
 				defaultItems.changeIcon = makeNormalItem("ChangeIcon", false);
 				defaultItems.changeIcon.submenu = makeIconChangeSubmenu(iconsData);
-				
+
+				//Create item with icon
+				defaultItems.create.submenu = makeIconSubmenu(iconsData);
+
+				//Change link
+				if(o.a_attr.href == "#") {
+					//Make it Link
+					defaultItems.link = makeNormalItem("Link", function (data) {
+						makeItLink(data);
+					});
+				} else {
+					//Make it Unlink
+					defaultItems.unlink = makeNormalItem("Unlink", function (data) {
+						makeItUnlink(data);
+					});
+				}
+
 				//If I can have undo and redo then auto save should be better
 				//Save
 				defaultItems.save = makeNormalItem("Save", function (data) {
@@ -25,9 +41,6 @@ var setUp = function() {
 					publishJsTree(data);
 				});
 
-				//Create item with icon
-				defaultItems.create.submenu = makeIconSubmenu(iconsData);
-				
 				//To prevent some action to a root
 				if (o.id == "root") {
 					delete defaultItems.rename;
@@ -42,6 +55,13 @@ var setUp = function() {
 			}
 		},
 		"plugins" : [ "contextmenu", "state", "dnd", "types"]
+	}).bind("changed.jstree", function (e, data) {
+		if(data.node) {
+			var href = data.node.a_attr.href;
+			if(href !== "#") {
+				window.open(href, '_blank');
+			}
+		}
 	});
 }
 
@@ -67,23 +87,29 @@ var makeTrimmedObject = function(root, nodeId, prefix) {
 	if(root.icon !== true) {
 		obj.icon = root.icon;
 	}
-	
+
 	if(root.state.opened === true) {
-		obj.state = {};
-		obj.state.opened = true;
+		obj.state = {"opened" : true};
 	}
-	
+
+	var useLink = false;
+	if(root.a_attr.href !== "#") {
+		useLink = true;
+		obj.a_attr = {"href" : root.a_attr.href};
+	}
+
 	var size = 1;
 	if(root.children.length > 0) {
 		obj.children = [];
 		for(var i = 0; i < root.children.length; i++) {
 			var v = makeTrimmedObject(root.children[i], nodeId + size, prefix);
-			size += v[0];
-			obj.children[i] = v[1];
+			size += v.size;
+			obj.children[i] = v.obj;
+			useLink = useLink || v.useLink;
 		}
 	}
 
-	return [size, obj];
+	return {"size" : size, "obj" : obj, "useLink" : useLink};
 }
 
 var makeJsTree = function(treeId, trimmedData) {
@@ -95,12 +121,19 @@ var makeJsTree = function(treeId, trimmedData) {
 	return obj;
 }
 
-var snippetMaker = function(treeId, htmlForm, jsonForm) {
+var snippetMaker = function(treeId, htmlForm, jsonForm, useLink) {
 	var treeDiv = "<div id='" + treeId + "'>" + htmlForm + "</div>\n";
 	var jsTreeCommand = 
 		"$('#" + treeId + "').jstree(" +
 		jsonForm +
 		")";
+
+	if(useLink) {
+		jsTreeCommand += '.bind("changed.jstree", function (e, data)' +
+		'{if(data.node) {var href = data.node.a_attr.href;' + 
+		'if(href !== "#") {window.open(href, "_blank");}}})';
+	}
+	
 	var treeScript = 
 		"<script>" +
 		jsTreeCommand + ";" +
@@ -112,7 +145,7 @@ var makeJsTreeHTML = function(treeId, trimmedData) {
 	var main = Handlebars.compile( $( "#main-template" ).html());
 	var html = main( {"children": [trimmedData]} );
 //	return html;
-	return html.replace(/>\s+</g, "><").replace(/\s+</g, "<").replace(/>\s+/g, ">");
+	return html.replace(/\s+</g, "<").replace(/>\s+/g, ">");
 }
 
 //MENU
@@ -134,16 +167,17 @@ var publishJsTree = function(data) {
 		treeId = 'tree_' + Math.floor(Math.random() * 1000);
 	}
 
-	var trimmedJsTreeData = makeTrimmedObject(rawJson, 0, treeId)[1];
+	var result = makeTrimmedObject(rawJson, 0, treeId);
+	var trimmedJsTreeData = result.obj;
 	var jsTree = makeJsTree(treeId, trimmedJsTreeData);
 
 	var jsTreeJson = JSON.stringify(jsTree);
-	var jsonSnippet = snippetMaker(treeId, "", jsTreeJson);
+	var jsonSnippet = snippetMaker(treeId, "", jsTreeJson, result.useLink);
 
 	$("#snippetJSON").val(jsonSnippet);
 
 	var jsTreeHTML = makeJsTreeHTML(treeId, trimmedJsTreeData);
-	var htmlSnippet = snippetMaker(treeId, jsTreeHTML, "");
+	var htmlSnippet = snippetMaker(treeId, jsTreeHTML, "", result.useLink);
 	$("#snippetHTML").val(htmlSnippet);
 }
 
@@ -196,8 +230,26 @@ var makeIconChangeSubmenu = function(items) {
 		};
 		resobj[key] = makeNormalItem(value.label, itemFuncion);
 	});
-	
+
 	return resobj;
+}
+
+var makeItLink = function(data) {
+	var href = prompt("Put URL here");
+	if(href === null || href === "#") {
+		return;
+	}
+	var inst = $.jstree.reference(data.reference),
+	obj = inst.get_node(data.reference);
+	obj.a_attr.href = href;
+	inst.set_icon(obj, "icon-link");
+}
+
+var makeItUnlink = function(data) {
+	var inst = $.jstree.reference(data.reference),
+	obj = inst.get_node(data.reference);
+	obj.a_attr.href = "#";
+	inst.set_icon(obj, true);
 }
 
 var makeNormalItem = function(label, action) {

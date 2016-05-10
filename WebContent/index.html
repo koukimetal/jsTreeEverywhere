@@ -12,7 +12,7 @@
 	href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.1/themes/default/style.min.css" />
 <script
 	src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.1/jstree.min.js"></script>
-	
+
 <link
 	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
 	rel="stylesheet">
@@ -24,7 +24,11 @@
 <script id="tree-template" type="text/x-handlebars-template">
 {{#each children}}
 <li id="{{id}}"{{#if state.opened}} class="jstree-open"{{/if}}{{#if icon}} data-jstree='{"icon":"{{icon}}"}'{{/if}}>
+{{#if a_attr.href}}
+<a href="{{a_attr.href}}">{{{text}}}</a>
+{{else}}
 {{{text}}}
+{{/if}}
 {{#if children}}
 <ul>
 {{> tree-template}}
@@ -67,7 +71,9 @@
 			<code>Create</code>
 			. Create directory structures. Finally, click
 			<code>Publish</code>
-			. Get a snippet and put it on your website.
+			. Get a snippet and put it on your website.<br>
+			You can make a item link using <code>Link</code>.
+			You can save current tree using <code>Save</code>.
 		</div>
 
 		<h3>Requirements to use snippets</h3>
@@ -81,8 +87,7 @@
 &lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.1/themes/default/style.min.css" /&gt;
 &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.1/jstree.min.js"&gt;&lt;/script&gt;</pre>
 		<div>
-			If you want to use icons (e.g. <i
-				class="icon-folder-alt"></i> ),
+			If you want to use icons (e.g. <i class="icon-folder-alt"></i> ),
 			<code>head</code>
 			tag has to include following line.
 			<button class="copy_btn btn btn-default btn-xs"
